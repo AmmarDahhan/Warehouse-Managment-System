@@ -1,0 +1,60 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useTheme } from "@mui/material/styles";
+import { useParams } from "react-router-dom";
+import MainLayout from "../MainLayout";
+import InstallUser from "../components/InstallUser";
+import { BASE_URL } from "../api/axiosInstance";
+
+export default function InstallReportsUser({ mode, toggleTheme }) {
+  const theme = useTheme();
+  const { id } = useParams();
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem("token");  
+
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/InstallationReport/${id}/details`,
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("📌 تفاصيل ضبط التركيب:", response.data);
+        setReport(response.data.data);
+      } catch (error) {
+        console.error("فشل في جلب تفاصيل ضبط التركيب", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReport();
+  }, [id]);
+
+  return (
+    <MainLayout mode={mode} toggleTheme={toggleTheme} pageTitle="">
+      <div
+        className="w-full min-h-screen p-8 rounded-[20px] mx-auto"
+        dir="rtl"
+        style={{
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        {loading ? (
+          <div className="text-center text-lg font-medium mt-10">
+            جارٍ التحميل...
+          </div>
+        ) : (
+          report && <InstallUser report={report} />
+        )}
+      </div>
+    </MainLayout>
+  );
+}
